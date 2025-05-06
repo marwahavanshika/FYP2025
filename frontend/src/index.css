@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.card {
+  @apply bg-white rounded-xl shadow-md p-6 mb-6;
+}
+
+.card-title {
+  @apply text-xl font-semibold text-gray-800 mb-4;
+}
+
+.btn {
+  @apply px-4 py-2 rounded-md font-medium transition duration-200;
+}
+
+.btn-primary {
+  @apply bg-blue-600 text-white hover:bg-blue-700;
+}
+
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+}
+
+.btn-danger {
+  @apply bg-red-600 text-white hover:bg-red-700;
+}
+
+.btn-success {
+  @apply bg-green-600 text-white hover:bg-green-700;
+}
+
+.input {
+  @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500;
+}
+
+.label {
+  @apply block mb-2 text-sm font-medium text-gray-700;
+}
+
+.form-group {
+  @apply mb-4;
+}
+
+.badge {
+  @apply px-2 py-1 text-xs font-semibold rounded-full;
+}
+
+.badge-success {
+  @apply bg-green-100 text-green-800;
+}
+
+.badge-warning {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.badge-danger {
+  @apply bg-red-100 text-red-800;
+}
+
+.badge-info {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.badge-secondary {
+  @apply bg-gray-100 text-gray-800;
+}
+
+.nav-link {
+  @apply px-3 py-2 rounded-md hover:bg-gray-100 transition duration-200;
+}
+
+.nav-link-active {
+  @apply bg-blue-100 text-blue-800;
+}
+
+.sidebar-link {
+  @apply flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 hover:text-blue-700 rounded-md transition duration-200;
+}
+
+.sidebar-link-active {
+  @apply bg-blue-100 text-blue-700;
+}
+
+.table {
+  @apply min-w-full divide-y divide-gray-200;
+}
+
+.table-header {
+  @apply bg-gray-50;
+}
+
+.table-header-cell {
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+}
+
+.table-body {
+  @apply bg-white divide-y divide-gray-200;
+}
+
+.table-row {
+  @apply hover:bg-gray-50;
+}
+
+.table-cell {
+  @apply px-6 py-4 whitespace-nowrap text-sm text-gray-500;
+}
+
+/* Custom styles for specific components */
+.priority-high {
+  @apply text-red-600;
+}
+
+.priority-medium {
+  @apply text-yellow-600;
+}
+
+.priority-low {
+  @apply text-green-600;
+}
+
+.sentiment-positive {
+  @apply text-green-600;
+}
+
+.sentiment-neutral {
+  @apply text-gray-600;
+}
+
+.sentiment-negative {
+  @apply text-red-600;
+}
+
+/* Star rating styles */
+.star-rating {
+  @apply flex;
+}
+
+.star {
+  @apply cursor-pointer text-2xl text-gray-300;
+}
+
+.star-filled {
+  @apply text-yellow-400;
+}
