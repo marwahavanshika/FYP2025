@@ -1,12 +1,14 @@
 import React, { useEffect } from 'react';
 import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import { AnimatePresence } from 'framer-motion';
 
 // Components
 import Navigation from './components/Navigation.jsx';
 import Sidebar from './components/Sidebar.jsx';
 import Footer from './components/Footer.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
+import PageTransition from './components/PageTransition.jsx';
 
 // Pages
 import Login from './pages/Login.jsx';
@@ -86,110 +88,144 @@ function App() {
       <div className="flex flex-1">
         {isAuthenticated && <Sidebar />}
         
-        <main className="flex-1 p-5">
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            
-            {/* Main Routes */}
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/assets" element={
-              <ProtectedRoute>
-                <Assets />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/complaints" element={
-              <ProtectedRoute>
-                <Complaints />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/community" element={
-              <ProtectedRoute>
-                <Community />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/room-allocation" element={
-              <ProtectedRoute>
-                <RoomAllocation />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/mess-feedback" element={
-              <ProtectedRoute>
-                <MessFeedback />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/profile" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/admin" element={
-              <ProtectedRoute requiredRole="admin">
-                <AdminPanel />
-              </ProtectedRoute>
-            } />
-            
-            {/* Role-specific dashboard routes */}
-            <Route path="/dashboard/hmc" element={
-              <ProtectedRoute requiredRole="hmc">
-                <HmcDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/warden/lohit-girls" element={
-              <ProtectedRoute requiredRole="warden_lohit_girls">
-                <WardenLohitGirlsDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/warden/lohit-boys" element={
-              <ProtectedRoute requiredRole="warden_lohit_boys">
-                <WardenLohitBoysDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/warden/papum-boys" element={
-              <ProtectedRoute requiredRole="warden_papum_boys">
-                <WardenPapumBoysDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/warden/subhanshiri-boys" element={
-              <ProtectedRoute requiredRole="warden_subhanshiri_boys">
-                <WardenSubhanshiriBoysDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/maintenance/plumber" element={
-              <ProtectedRoute requiredRole="plumber">
-                <PlumberDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/maintenance/electrician" element={
-              <ProtectedRoute requiredRole="electrician">
-                <ElectricianDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="/dashboard/mess" element={
-              <ProtectedRoute requiredRole="mess_vendor">
-                <MessVendorDashboard />
-              </ProtectedRoute>
-            } />
-            
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
+        <main className="flex-1 p-5 ">
+          <AnimatePresence mode="wait">
+            <Routes location={location} key={location.pathname}>
+              <Route path="/login" element={<Login />} />
+              
+              {/* Main Routes */}
+              <Route path="/" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Dashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/assets" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Assets />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/complaints" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Complaints />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/community" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Community />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/room-allocation" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <RoomAllocation />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/mess-feedback" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <MessFeedback />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/profile" element={
+                <ProtectedRoute>
+                  <PageTransition>
+                    <Profile />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/admin" element={
+                <ProtectedRoute requiredRole="admin">
+                  <PageTransition>
+                    <AdminPanel />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              {/* Role-specific dashboard routes */}
+              <Route path="/dashboard/hmc" element={
+                <ProtectedRoute requiredRole="hmc">
+                  <PageTransition>
+                    <HmcDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/warden/lohit-girls" element={
+                <ProtectedRoute requiredRole="warden_lohit_girls">
+                  <PageTransition>
+                    <WardenLohitGirlsDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/warden/lohit-boys" element={
+                <ProtectedRoute requiredRole="warden_lohit_boys">
+                  <PageTransition>
+                    <WardenLohitBoysDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/warden/papum-boys" element={
+                <ProtectedRoute requiredRole="warden_papum_boys">
+                  <PageTransition>
+                    <WardenPapumBoysDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/warden/subhanshiri-boys" element={
+                <ProtectedRoute requiredRole="warden_subhanshiri_boys">
+                  <PageTransition>
+                    <WardenSubhanshiriBoysDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/maintenance/plumber" element={
+                <ProtectedRoute requiredRole="plumber">
+                  <PageTransition>
+                    <PlumberDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/maintenance/electrician" element={
+                <ProtectedRoute requiredRole="electrician">
+                  <PageTransition>
+                    <ElectricianDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="/dashboard/mess" element={
+                <ProtectedRoute requiredRole="mess_vendor">
+                  <PageTransition>
+                    <MessVendorDashboard />
+                  </PageTransition>
+                </ProtectedRoute>
+              } />
+              
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AnimatePresence>
         </main>
       </div>
       
