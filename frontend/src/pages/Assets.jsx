@@ -116,21 +116,91 @@ const Assets = () => {
   };
   
   // Submit the form
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (editingAsset) {
-      // Update existing asset
-      dispatch(updateAsset({
-        id: editingAsset.id,
-        assetData: formData
-      }));
-    } else {
-      // Create new asset
-      dispatch(createAsset(formData));
+    try {
+      // Create a copy of the form data to submit
+      const submissionData = { ...formData };
+      
+      // Ensure purchase_date is provided and valid
+      if (!submissionData.purchase_date || submissionData.purchase_date.trim() === '') {
+        throw new Error('Purchase date is required');
+      }
+      
+      // Format the purchase date correctly
+      try {
+        const purchaseDate = new Date(submissionData.purchase_date);
+        if (isNaN(purchaseDate.getTime())) {
+          throw new Error('Invalid purchase date');
+        }
+        submissionData.purchase_date = purchaseDate.toISOString();
+      } catch (error) {
+        console.error('Purchase date error:', error);
+        throw new Error('Invalid purchase date format. Please enter a valid date.');
+      }
+      
+      // Handle warranty date (optional)
+      if (submissionData.warranty_until && submissionData.warranty_until.trim() !== '') {
+        try {
+          const warrantyDate = new Date(submissionData.warranty_until);
+          if (isNaN(warrantyDate.getTime())) {
+            console.warn('Invalid warranty date, removing field');
+            delete submissionData.warranty_until;
+          } else {
+            submissionData.warranty_until = warrantyDate.toISOString();
+          }
+        } catch (error) {
+          console.warn('Warranty date error:', error);
+          delete submissionData.warranty_until;
+        }
+      } else {
+        delete submissionData.warranty_until;
+      }
+      
+      // Ensure all required fields are present and valid
+      if (!submissionData.name || submissionData.name.trim() === '') {
+        throw new Error('Asset name is required');
+      }
+      
+      if (!submissionData.asset_type || submissionData.asset_type.trim() === '') {
+        throw new Error('Asset type is required');
+      }
+      
+      if (!submissionData.location || submissionData.location.trim() === '') {
+        throw new Error('Location is required');
+      }
+      
+      console.log('Submitting asset data:', submissionData);
+      
+      if (editingAsset) {
+        // Update existing asset
+        await dispatch(updateAsset({
+          id: editingAsset.id,
+          assetData: submissionData
+        })).unwrap();
+      } else {
+        // Create new asset
+        await dispatch(createAsset(submissionData)).unwrap();
+      }
+      
+      closeForm();
+    } catch (error) {
+      console.error('Form submission error:', error);
+      // Keep the form open if there's an error
+      dispatch(clearAssetSuccess());
+      dispatch(clearAssetError());
+      
+      // Show the error directly
+      const errorMessage = typeof error === 'string' ? error : 
+                          error.message || 'An error occurred while processing the form';
+      
+      // Dispatch directly to show error
+      dispatch({ 
+        type: 'assets/createAsset/rejected', 
+        payload: { detail: errorMessage } 
+      });
     }
-    
-    closeForm();
   };
   
   // Delete an asset
@@ -148,7 +218,15 @@ const Assets = () => {
   };
   
   // Check if user has permission to manage assets
-  const canManageAssets = user && (user.role === 'admin' || user.role === 'staff');
+  const canManageAssets = user && (
+    user.role === 'admin' || 
+    user.role === 'hmc' || 
+    user.role === 'warden_lohit_girls' || 
+    user.role === 'warden_lohit_boys' || 
+    user.role === 'warden_papum_boys' || 
+    user.role === 'warden_subhanshiri_boys' || 
+    user.role === 'staff'
+  );
   
   // Get status badge class
   const getStatusBadgeClass = (status) => {
@@ -199,7 +277,7 @@ const Assets = () => {
       
       {(success || error) && (
         <div className={`mb-4 p-4 rounded-md ${success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-          {message || error}
+          {message || (error && typeof error === 'object' ? JSON.stringify(error) : error)}
         </div>
       )}
       
@@ -365,6 +443,12 @@ const Assets = () => {
                 </svg>
               </button>
             </div>
+            
+            {error && (
+              <div className="mb-4 p-4 rounded-md bg-red-100 text-red-700">
+                {typeof error === 'object' ? JSON.stringify(error) : error}
+              </div>
+            )}
             
             <form onSubmit={handleSubmit}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -11,13 +11,15 @@ class User(Base):
     full_name = Column(String)
     hashed_password = Column(String)
     phone_number = Column(String)
-    role = Column(String, default="student")  # student, staff, admin
+    role = Column(String, default="student")  # student, admin, hmc, warden_lohit_girls, warden_lohit_boys, warden_papum_boys, warden_subhanshiri_boys, plumber, electrician, mess_vendor
+    hostel = Column(String, nullable=True)  # lohit_girls, lohit_boys, papum_boys, subhanshiri_boys
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     
     # Relationships
-    complaints = relationship("Complaint", back_populates="user")
+    complaints = relationship("Complaint", back_populates="user", foreign_keys="Complaint.user_id")
+    assigned_complaints = relationship("Complaint", back_populates="assignee", foreign_keys="Complaint.assigned_to")
     posts = relationship("CommunityPost", back_populates="user")
     comments = relationship("Comment", back_populates="user")
     room_allocation = relationship("RoomAllocation", back_populates="user")
@@ -44,20 +46,23 @@ class Complaint(Base):
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, index=True)
     description = Column(Text)
-    category = Column(String, index=True)  # plumbing, electrical, cleaning, etc.
+    category = Column(String, index=True)  # plumbing, electrical, cleaning, mess, etc.
     status = Column(String, default="pending")  # pending, in_progress, resolved, rejected
     priority = Column(String, default="medium")  # low, medium, high, urgent
     sentiment_score = Column(Float, nullable=True)  # AI-generated sentiment score
     location = Column(String)
+    hostel = Column(String, index=True)  # lohit_girls, lohit_boys, papum_boys, subhanshiri_boys
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
     resolved_at = Column(DateTime(timezone=True), nullable=True)
+    assigned_to = Column(Integer, ForeignKey("users.id"), nullable=True)
     
     # Foreign keys
     user_id = Column(Integer, ForeignKey("users.id"))
     
     # Relationships
-    user = relationship("User", back_populates="complaints")
+    user = relationship("User", back_populates="complaints", foreign_keys=[user_id])
+    assignee = relationship("User", back_populates="assigned_complaints", foreign_keys=[assigned_to])
 
 class CommunityPost(Base):
     __tablename__ = "community_posts"
@@ -100,6 +105,7 @@ class Room(Base):
     number = Column(String, unique=True, index=True)
     floor = Column(Integer)
     building = Column(String)
+    hostel = Column(String, index=True)  # lohit_girls, lohit_boys, papum_boys, subhanshiri_boys
     type = Column(String)  # single, double, triple, dormitory
     capacity = Column(Integer)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

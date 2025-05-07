@@ -52,6 +52,9 @@ const MessFeedback = () => {
     meal_type: ''
   });
   
+  // New state for selected menu item in the table
+  const [selectedMenuItem, setSelectedMenuItem] = useState(null);
+  
   // Day of week options
   const daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   
@@ -250,46 +253,67 @@ const MessFeedback = () => {
     );
   };
   
+  // Function to group menu items by day and meal
+  const groupMenuItemsByDayAndMeal = () => {
+    const groupedMenu = {};
+    
+    daysOfWeek.forEach(day => {
+      groupedMenu[day] = {};
+      mealTypes.forEach(meal => {
+        groupedMenu[day][meal] = null;
+      });
+    });
+    
+    menuItems.forEach(item => {
+      if (groupedMenu[item.day_of_week]) {
+        groupedMenu[item.day_of_week][item.meal_type] = item;
+      }
+    });
+    
+    return groupedMenu;
+  };
+  
+  // Get grouped menu items
+  const groupedMenu = groupMenuItemsByDayAndMeal();
+  
+  // Handle cell click
+  const handleMenuCellClick = (menuItem) => {
+    if (!menuItem) return;
+    setSelectedMenuItem(menuItem);
+  };
+  
+  // Close menu detail card
+  const closeMenuDetailCard = () => {
+    setSelectedMenuItem(null);
+  };
+  
   return (
-    <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Mess Menu & Feedback</h1>
-        <div className="flex space-x-2">
-          <button
-            onClick={() => openFeedbackForm()}
-            className="btn btn-primary flex items-center"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-            </svg>
-            Give Feedback
-          </button>
-          
-          {(user?.role === 'admin' || user?.role === 'staff') && (
-            <button
-              onClick={openCreateMenuForm}
-              className="btn btn-secondary flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
-              </svg>
-              Add Menu Item
-            </button>
-          )}
-        </div>
-      </div>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold text-gray-800 mb-6">Mess Menu & Feedback</h1>
       
       {(success || error) && (
-        <div className={`mb-4 p-4 rounded-md ${success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+        <div className={`mb-6 p-4 rounded-md ${success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
           {message || error}
         </div>
       )}
       
-      {/* Menu Section */}
+      {/* Mess Menu Section */}
       <div className="card mb-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="card-title">Mess Menu</h2>
           <div className="flex flex-wrap gap-2">
+            {(user?.role === 'admin' || user?.role === 'mess_vendor') && (
+              <button
+                onClick={openCreateMenuForm}
+                className="btn btn-primary btn-sm flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                </svg>
+                Add Menu Item
+              </button>
+            )}
+            
             <select
               name="day_of_week"
               value={menuFilters.day_of_week}
@@ -323,57 +347,145 @@ const MessFeedback = () => {
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
           </div>
-        ) : menuItems.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {menuItems.map(menuItem => (
-              <div key={menuItem.id} className="border rounded-lg p-4 bg-white hover:shadow-md transition duration-200">
-                <div className="flex justify-between">
-                  <div>
-                    <h3 className="font-medium text-lg capitalize">{menuItem.meal_type}</h3>
-                    <p className="text-gray-500">{menuItem.day_of_week}</p>
+        ) : (
+          <>
+            {/* Table View of Menu Items */}
+            <div className="overflow-x-auto">
+              <table className="min-w-full bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="py-3 px-4 text-left font-medium text-gray-600">Day</th>
+                    {mealTypes.map(type => (
+                      <th key={type} className="py-3 px-4 text-left font-medium text-gray-600 capitalize">
+                        {type}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {daysOfWeek.map(day => {
+                    // Skip days with no menu items if filtering
+                    if (menuFilters.day_of_week && day !== menuFilters.day_of_week) return null;
+                    
+                    return (
+                      <tr key={day} className="border-t border-gray-200">
+                        <td className="py-3 px-4 font-medium">{day}</td>
+                        {mealTypes.map(type => {
+                          // Skip meal types that don't match the filter
+                          if (menuFilters.meal_type && type !== menuFilters.meal_type) return null;
+                          
+                          const menuItem = groupedMenu[day][type];
+                          
+                          return (
+                            <td 
+                              key={type} 
+                              className={`py-3 px-4 ${menuItem ? 'cursor-pointer hover:bg-blue-50 transition-colors' : 'bg-gray-50'}`}
+                              onClick={() => handleMenuCellClick(menuItem)}
+                            >
+                              {menuItem ? (
+                                <div>
+                                  <div className="font-medium capitalize">{type}</div>
+                                  <div className="text-gray-600 text-sm line-clamp-2">
+                                    {menuItem.description.substring(0, 50)}
+                                    {menuItem.description.length > 50 ? '...' : ''}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="text-gray-400 italic text-sm">No menu set</div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            
+            {/* Selected Menu Item Detail Card with Animation */}
+            {selectedMenuItem && (
+              <div 
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                onClick={closeMenuDetailCard}
+              >
+                <div 
+                  className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 transform transition-all duration-300 ease-in-out animate-popup"
+                  onClick={e => e.stopPropagation()}
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <h2 className="text-xl font-semibold capitalize">
+                        {selectedMenuItem.meal_type} - {selectedMenuItem.day_of_week}
+                      </h2>
+                      <p className="text-gray-500 text-sm">
+                        Last updated: {formatDate(selectedMenuItem.updated_at || selectedMenuItem.created_at)}
+                      </p>
+                    </div>
+                    
+                    <button 
+                      onClick={closeMenuDetailCard}
+                      className="text-gray-500 hover:text-gray-700"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                   
-                  {(user?.role === 'admin' || user?.role === 'staff') && (
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => openEditMenuForm(menuItem)}
-                        className="p-1 text-blue-600 hover:text-blue-800"
-                        title="Edit"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                        </svg>
-                      </button>
-                      <button
-                        onClick={() => handleDeleteMenuItem(menuItem.id)}
-                        className="p-1 text-red-600 hover:text-red-800"
-                        title="Delete"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                          <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                        </svg>
-                      </button>
+                  <div className="mb-6">
+                    <h3 className="font-medium text-gray-700 mb-2">Menu Description:</h3>
+                    <div className="bg-gray-50 p-4 rounded-md whitespace-pre-line">
+                      {selectedMenuItem.description}
                     </div>
-                  )}
-                </div>
-                
-                <p className="mt-2 whitespace-pre-line">{menuItem.description}</p>
-                
-                <div className="mt-3">
-                  <button
-                    onClick={() => openFeedbackForm(menuItem.meal_type)}
-                    className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                  >
-                    Give feedback
-                  </button>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      {(user?.role === 'admin' || user?.role === 'mess_vendor') && (
+                        <>
+                          <button
+                            onClick={() => {
+                              openEditMenuForm(selectedMenuItem);
+                              closeMenuDetailCard();
+                            }}
+                            className="btn btn-secondary btn-sm"
+                          >
+                            Edit Menu Item
+                          </button>
+                          <button
+                            onClick={() => {
+                              handleDeleteMenuItem(selectedMenuItem.id);
+                              closeMenuDetailCard();
+                            }}
+                            className="btn btn-danger btn-sm"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => {
+                        openFeedbackForm(selectedMenuItem.meal_type);
+                        closeMenuDetailCard();
+                      }}
+                      className="btn btn-primary btn-sm"
+                    >
+                      Give Feedback
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No menu items found for the selected filters.</p>
-          </div>
+            )}
+            
+            {/* No Items Message */}
+            {menuItems.length === 0 && (
+              <div className="text-center py-8">
+                <p className="text-gray-500">No menu items found for the selected filters.</p>
+              </div>
+            )}
+          </>
         )}
       </div>
       

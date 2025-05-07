@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime
@@ -7,7 +7,14 @@ import models
 import schemas
 import ai_utils
 from database import get_db
-from auth import get_current_active_user, get_staff_or_admin_user
+from auth import (
+    get_current_active_user, 
+    get_staff_or_admin_user, 
+    get_hmc_user, 
+    get_warden_user, 
+    get_maintenance_user,
+    get_mess_vendor_user
+)
 
 router = APIRouter()
 
@@ -32,15 +39,49 @@ async def create_complaint(
             complaint.category
         )
     
+    # For students, validate that they're submitting complaints for their own hostel
+    if current_user.role == "student":
+        if not current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You must be assigned to a hostel before filing complaints",
+            )
+        
+        if complaint.hostel != current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only file complaints for your assigned hostel",
+            )
+    
+    # Auto-assign complaint to relevant maintenance staff based on category
+    assigned_to = None
+    if complaint.category == "plumbing":
+        # Find a plumber
+        plumber = db.query(models.User).filter(models.User.role == "plumber").first()
+        if plumber:
+            assigned_to = plumber.id
+    elif complaint.category == "electrical":
+        # Find an electrician
+        electrician = db.query(models.User).filter(models.User.role == "electrician").first()
+        if electrician:
+            assigned_to = electrician.id
+    elif complaint.category == "mess" or complaint.category == "food":
+        # Find a mess vendor
+        mess_vendor = db.query(models.User).filter(models.User.role == "mess_vendor").first()
+        if mess_vendor:
+            assigned_to = mess_vendor.id
+    
     # Create new complaint
     db_complaint = models.Complaint(
         title=complaint.title,
         description=complaint.description,
         category=complaint.category,
         location=complaint.location,
+        hostel=complaint.hostel,
         priority=complaint.priority,
         sentiment_score=sentiment_score,
-        user_id=current_user.id
+        user_id=current_user.id,
+        assigned_to=assigned_to
     )
     
     db.add(db_complaint)
@@ -52,6 +93,7 @@ async def create_complaint(
 @router.post("/complaints/voice", response_model=schemas.ComplaintResponse, status_code=status.HTTP_201_CREATED)
 async def create_voice_complaint(
     voice_complaint: schemas.VoiceComplaintCreate,
+    hostel: str = Query(..., description="The hostel for which the complaint is being filed"),
     current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -79,15 +121,49 @@ async def create_voice_complaint(
     sentiment_score = ai_utils.analyze_sentiment(complaint_text)
     priority = ai_utils.prioritize_complaint(complaint_text, category)
     
+    # For students, validate that they're submitting complaints for their own hostel
+    if current_user.role == "student":
+        if not current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You must be assigned to a hostel before filing complaints",
+            )
+        
+        if hostel != current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only file complaints for your assigned hostel",
+            )
+    
+    # Auto-assign complaint to relevant maintenance staff based on category
+    assigned_to = None
+    if category == "plumbing":
+        # Find a plumber
+        plumber = db.query(models.User).filter(models.User.role == "plumber").first()
+        if plumber:
+            assigned_to = plumber.id
+    elif category == "electrical":
+        # Find an electrician
+        electrician = db.query(models.User).filter(models.User.role == "electrician").first()
+        if electrician:
+            assigned_to = electrician.id
+    elif category == "mess" or category == "food":
+        # Find a mess vendor
+        mess_vendor = db.query(models.User).filter(models.User.role == "mess_vendor").first()
+        if mess_vendor:
+            assigned_to = mess_vendor.id
+    
     # Create new complaint
     db_complaint = models.Complaint(
         title=title,
         description=description,
         category=category,
         location="To be specified",  # Default location, user should update this later
+        hostel=hostel,
         priority=priority,
         sentiment_score=sentiment_score,
-        user_id=current_user.id
+        user_id=current_user.id,
+        assigned_to=assigned_to
     )
     
     db.add(db_complaint)
@@ -103,6 +179,7 @@ async def get_complaints(
     status: Optional[str] = None,
     category: Optional[str] = None,
     priority: Optional[str] = None,
+    hostel: Optional[str] = None,
     current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -113,6 +190,25 @@ async def get_complaints(
     if current_user.role == "student":
         # Students can only see their own complaints
         query = query.filter(models.Complaint.user_id == current_user.id)
+    elif current_user.role.startswith("warden_"):
+        # Wardens can only see complaints from their hostel
+        hostel_mapping = {
+            "warden_lohit_girls": "lohit_girls",
+            "warden_lohit_boys": "lohit_boys",
+            "warden_papum_boys": "papum_boys",
+            "warden_subhanshiri_boys": "subhanshiri_boys"
+        }
+        query = query.filter(models.Complaint.hostel == hostel_mapping[current_user.role])
+    elif current_user.role == "plumber":
+        # Plumbers only see plumbing complaints
+        query = query.filter(models.Complaint.category == "plumbing")
+    elif current_user.role == "electrician":
+        # Electricians only see electrical complaints
+        query = query.filter(models.Complaint.category == "electrical")
+    elif current_user.role == "mess_vendor":
+        # Mess vendors only see mess-related complaints
+        query = query.filter(models.Complaint.category.in_(["mess", "food"]))
+    # Admin and HMC can see all complaints
     
     # Apply other filters if provided
     if status:
@@ -121,6 +217,8 @@ async def get_complaints(
         query = query.filter(models.Complaint.category == category)
     if priority:
         query = query.filter(models.Complaint.priority == priority)
+    if hostel:
+        query = query.filter(models.Complaint.hostel == hostel)
     
     complaints = query.order_by(models.Complaint.created_at.desc()).offset(skip).limit(limit).all()
     return complaints
@@ -144,6 +242,33 @@ async def get_complaint(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to view this complaint",
+        )
+    elif current_user.role.startswith("warden_"):
+        hostel_mapping = {
+            "warden_lohit_girls": "lohit_girls",
+            "warden_lohit_boys": "lohit_boys",
+            "warden_papum_boys": "papum_boys",
+            "warden_subhanshiri_boys": "subhanshiri_boys"
+        }
+        if complaint.hostel != hostel_mapping[current_user.role]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to view complaints from other hostels",
+            )
+    elif current_user.role == "plumber" and complaint.category != "plumbing":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view plumbing complaints",
+        )
+    elif current_user.role == "electrician" and complaint.category != "electrical":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view electrical complaints",
+        )
+    elif current_user.role == "mess_vendor" and complaint.category not in ["mess", "food"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only view mess-related complaints",
         )
     
     return complaint
@@ -177,6 +302,39 @@ async def update_complaint(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Students cannot update the status of a complaint",
             )
+        
+        if complaint_update.hostel is not None and complaint_update.hostel != current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only file complaints for your assigned hostel",
+            )
+    elif current_user.role.startswith("warden_"):
+        hostel_mapping = {
+            "warden_lohit_girls": "lohit_girls",
+            "warden_lohit_boys": "lohit_boys",
+            "warden_papum_boys": "papum_boys",
+            "warden_subhanshiri_boys": "subhanshiri_boys"
+        }
+        if complaint.hostel != hostel_mapping[current_user.role]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to update complaints from other hostels",
+            )
+    elif current_user.role == "plumber" and complaint.category != "plumbing":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only update plumbing complaints",
+        )
+    elif current_user.role == "electrician" and complaint.category != "electrical":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only update electrical complaints",
+        )
+    elif current_user.role == "mess_vendor" and complaint.category not in ["mess", "food"]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only update mess-related complaints",
+        )
     
     # Update fields if provided
     if complaint_update.title is not None:
@@ -194,27 +352,40 @@ async def update_complaint(
     if complaint_update.location is not None:
         complaint.location = complaint_update.location
     
+    if complaint_update.hostel is not None and current_user.role != "student":
+        complaint.hostel = complaint_update.hostel
+    
     if complaint_update.priority is not None and current_user.role != "student":
         complaint.priority = complaint_update.priority
     
     if complaint_update.status is not None and current_user.role != "student":
+        # Update status and set resolved_at if resolved
         complaint.status = complaint_update.status
-        # If status is changed to resolved, update resolved_at timestamp
         if complaint_update.status == "resolved":
             complaint.resolved_at = datetime.now()
+    
+    if complaint_update.assigned_to is not None:
+        # Only HMC and admin can assign complaints
+        if current_user.role not in ["admin", "hmc"]:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only HMC and admin can assign complaints",
+            )
+        complaint.assigned_to = complaint_update.assigned_to
     
     db.commit()
     db.refresh(complaint)
     
     return complaint
 
-@router.delete("/complaints/{complaint_id}")
-async def delete_complaint(
+@router.post("/complaints/{complaint_id}/assign", response_model=schemas.ComplaintResponse)
+async def assign_complaint(
     complaint_id: int,
-    current_user: models.User = Depends(get_current_active_user),
+    assignment: schemas.ComplaintAssign,
+    current_user: models.User = Depends(get_hmc_user),
     db: Session = Depends(get_db)
 ):
-    """Delete complaint by ID."""
+    """Assign a complaint to a staff member (HMC or Admin only)."""
     complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id).first()
     if complaint is None:
         raise HTTPException(
@@ -222,40 +393,35 @@ async def delete_complaint(
             detail="Complaint not found",
         )
     
-    # Check if user has permission to delete this complaint
-    if current_user.role == "student" and complaint.user_id != current_user.id:
+    # Verify the assignee exists
+    assignee = db.query(models.User).filter(models.User.id == assignment.assigned_to).first()
+    if assignee is None:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to delete this complaint",
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Assignee not found",
         )
     
-    db.delete(complaint)
+    # Verify the assignee is appropriate for the complaint type
+    if complaint.category == "plumbing" and assignee.role != "plumber":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Plumbing complaints should be assigned to a plumber",
+        )
+    elif complaint.category == "electrical" and assignee.role != "electrician":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Electrical complaints should be assigned to an electrician",
+        )
+    elif complaint.category in ["mess", "food"] and assignee.role != "mess_vendor":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mess complaints should be assigned to a mess vendor",
+        )
+    
+    complaint.assigned_to = assignment.assigned_to
+    complaint.status = "in_progress"  # Update status to in_progress when assigned
+    
     db.commit()
+    db.refresh(complaint)
     
-    return {"message": "Complaint deleted successfully"}
-
-@router.get("/complaints/{complaint_id}/suggestions", response_model=List[str])
-async def get_complaint_suggestions(
-    complaint_id: int,
-    current_user: models.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Get AI-generated suggestions for resolving a complaint."""
-    complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id).first()
-    if complaint is None:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Complaint not found",
-        )
-    
-    # Check if user has permission to view this complaint
-    if current_user.role == "student" and complaint.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to view this complaint",
-        )
-    
-    # Generate suggestions
-    suggestions = ai_utils.get_complaint_suggestions(complaint.category, complaint.description)
-    
-    return suggestions
+    return complaint

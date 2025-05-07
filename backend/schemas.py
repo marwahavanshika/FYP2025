@@ -16,6 +16,7 @@ class UserBase(BaseModel):
     email: EmailStr
     full_name: str
     phone_number: Optional[str] = None
+    hostel: Optional[str] = None
 
 class UserCreate(UserBase):
     password: str
@@ -25,6 +26,7 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr] = None
     full_name: Optional[str] = None
     phone_number: Optional[str] = None
+    hostel: Optional[str] = None
     is_active: Optional[bool] = None
 
 class UserUpdatePassword(BaseModel):
@@ -78,18 +80,24 @@ class ComplaintBase(BaseModel):
     description: str
     category: str
     location: str
+    hostel: str
     priority: Optional[str] = "medium"
 
 class ComplaintCreate(ComplaintBase):
     pass
+
+class ComplaintAssign(BaseModel):
+    assigned_to: int
 
 class ComplaintUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     category: Optional[str] = None
     location: Optional[str] = None
+    hostel: Optional[str] = None
     status: Optional[str] = None
     priority: Optional[str] = None
+    assigned_to: Optional[int] = None
 
 class ComplaintResponse(ComplaintBase):
     id: int
@@ -97,6 +105,7 @@ class ComplaintResponse(ComplaintBase):
     priority: str
     sentiment_score: Optional[float]
     user_id: int
+    assigned_to: Optional[int] = None
     created_at: datetime
     updated_at: Optional[datetime]
     resolved_at: Optional[datetime]
@@ -157,6 +166,7 @@ class RoomBase(BaseModel):
     number: str
     floor: int
     building: str
+    hostel: str
     type: str
     capacity: int
 

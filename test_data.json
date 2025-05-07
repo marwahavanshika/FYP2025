@@ -1,0 +1,561 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "email": "admin@hostel.edu",
+      "password": "admin123",
+      "full_name": "Admin User",
+      "phone_number": "+91-9876543210",
+      "role": "admin",
+      "hostel": null,
+      "is_active": true
+    },
+    {
+      "id": 2,
+      "email": "hmc@hostel.edu",
+      "password": "hmc123",
+      "full_name": "HMC Head",
+      "phone_number": "+91-9876543211",
+      "role": "hmc",
+      "hostel": null,
+      "is_active": true
+    },
+    {
+      "id": 3,
+      "email": "lohitgirls.warden@hostel.edu",
+      "password": "warden123",
+      "full_name": "Dr. Priya Singh",
+      "phone_number": "+91-9876543212",
+      "role": "warden_lohit_girls",
+      "hostel": "lohit_girls",
+      "is_active": true
+    },
+    {
+      "id": 4,
+      "email": "lohitboys.warden@hostel.edu",
+      "password": "warden123",
+      "full_name": "Dr. Rahul Sharma",
+      "phone_number": "+91-9876543213",
+      "role": "warden_lohit_boys",
+      "hostel": "lohit_boys",
+      "is_active": true
+    },
+    {
+      "id": 5,
+      "email": "papumboys.warden@hostel.edu",
+      "password": "warden123",
+      "full_name": "Dr. Ankit Patel",
+      "phone_number": "+91-9876543214",
+      "role": "warden_papum_boys",
+      "hostel": "papum_boys",
+      "is_active": true
+    },
+    {
+      "id": 6,
+      "email": "subhanshiriboys.warden@hostel.edu",
+      "password": "warden123",
+      "full_name": "Dr. Vikram Mathur",
+      "phone_number": "+91-9876543215",
+      "role": "warden_subhanshiri_boys",
+      "hostel": "subhanshiri_boys",
+      "is_active": true
+    },
+    {
+      "id": 7,
+      "email": "plumber@hostel.edu",
+      "password": "plumber123",
+      "full_name": "Rajesh Kumar",
+      "phone_number": "+91-9876543216",
+      "role": "plumber",
+      "hostel": null,
+      "is_active": true
+    },
+    {
+      "id": 8,
+      "email": "electrician@hostel.edu",
+      "password": "electrician123",
+      "full_name": "Sunil Verma",
+      "phone_number": "+91-9876543217",
+      "role": "electrician",
+      "hostel": null,
+      "is_active": true
+    },
+    {
+      "id": 9,
+      "email": "messvendor@hostel.edu",
+      "password": "mess123",
+      "full_name": "Govind Caterers",
+      "phone_number": "+91-9876543218",
+      "role": "mess_vendor",
+      "hostel": null,
+      "is_active": true
+    },
+    {
+      "id": 10,
+      "email": "female1@hostel.edu",
+      "password": "student123",
+      "full_name": "Anjali Mishra",
+      "phone_number": "+91-9876543219",
+      "role": "student",
+      "hostel": "lohit_girls",
+      "is_active": true
+    },
+    {
+      "id": 11,
+      "email": "female2@hostel.edu",
+      "password": "student123",
+      "full_name": "Neha Gupta",
+      "phone_number": "+91-9876543220",
+      "role": "student",
+      "hostel": "lohit_girls",
+      "is_active": true
+    },
+    {
+      "id": 12,
+      "email": "male1@hostel.edu",
+      "password": "student123",
+      "full_name": "Aditya Sharma",
+      "phone_number": "+91-9876543221",
+      "role": "student",
+      "hostel": "lohit_boys",
+      "is_active": true
+    },
+    {
+      "id": 13,
+      "email": "male2@hostel.edu",
+      "password": "student123",
+      "full_name": "Rohan Singh",
+      "phone_number": "+91-9876543222",
+      "role": "student",
+      "hostel": "papum_boys",
+      "is_active": true
+    },
+    {
+      "id": 14,
+      "email": "phdmale@hostel.edu",
+      "password": "student123",
+      "full_name": "Anand Mehta",
+      "phone_number": "+91-9876543223",
+      "role": "student",
+      "hostel": "subhanshiri_boys",
+      "is_active": true
+    },
+    {
+      "id": 15,
+      "email": "newstudent@hostel.edu",
+      "password": "student123",
+      "full_name": "Kriti Joshi",
+      "phone_number": "+91-9876543224",
+      "role": "student",
+      "hostel": null,
+      "is_active": true
+    }
+  ],
+  
+  "complaints": [
+    {
+      "id": 1,
+      "title": "Water Leakage in Bathroom",
+      "description": "There is continuous water leakage from the bathroom tap. The floor is always wet and slippery.",
+      "category": "plumbing",
+      "status": "pending",
+      "priority": "medium",
+      "location": "Room 101",
+      "hostel": "lohit_girls",
+      "user_id": 10,
+      "assigned_to": 7,
+      "created_at": "2023-06-01T10:30:00Z",
+      "updated_at": null,
+      "resolved_at": null,
+      "sentiment_score": -0.6
+    },
+    {
+      "id": 2,
+      "title": "Ceiling Fan Not Working",
+      "description": "The ceiling fan in my room is not working since yesterday. It's making noise but not rotating properly.",
+      "category": "electrical",
+      "status": "in_progress",
+      "priority": "high",
+      "location": "Room 205",
+      "hostel": "lohit_boys",
+      "user_id": 12,
+      "assigned_to": 8,
+      "created_at": "2023-06-02T14:20:00Z",
+      "updated_at": "2023-06-02T16:45:00Z",
+      "resolved_at": null,
+      "sentiment_score": -0.7
+    },
+    {
+      "id": 3,
+      "title": "Poor Food Quality",
+      "description": "The quality of food served in the mess has deteriorated significantly. The vegetables are not fresh and curry is too oily.",
+      "category": "mess",
+      "status": "pending",
+      "priority": "high",
+      "location": "Mess Hall",
+      "hostel": "papum_boys",
+      "user_id": 13,
+      "assigned_to": 9,
+      "created_at": "2023-06-03T19:10:00Z",
+      "updated_at": null,
+      "resolved_at": null,
+      "sentiment_score": -0.8
+    },
+    {
+      "id": 4,
+      "title": "Clogged Drainage",
+      "description": "The drainage in the common bathroom is clogged, causing water accumulation and foul smell.",
+      "category": "plumbing",
+      "status": "in_progress",
+      "priority": "medium",
+      "location": "Common Bathroom, 2nd Floor",
+      "hostel": "lohit_girls",
+      "user_id": 11,
+      "assigned_to": 7,
+      "created_at": "2023-06-04T08:45:00Z",
+      "updated_at": "2023-06-04T10:30:00Z",
+      "resolved_at": null,
+      "sentiment_score": -0.5
+    },
+    {
+      "id": 5,
+      "title": "No Hot Water",
+      "description": "The water heater is not working, and there's no hot water available for bathing.",
+      "category": "electrical",
+      "status": "resolved",
+      "priority": "high",
+      "location": "Common Bathroom, 1st Floor",
+      "hostel": "subhanshiri_boys",
+      "user_id": 14,
+      "assigned_to": 8,
+      "created_at": "2023-06-05T06:20:00Z",
+      "updated_at": "2023-06-05T14:15:00Z",
+      "resolved_at": "2023-06-05T14:15:00Z",
+      "sentiment_score": -0.6
+    },
+    {
+      "id": 6,
+      "title": "Broken Chair",
+      "description": "The chair in my room has a broken leg and is unusable.",
+      "category": "furniture",
+      "status": "pending",
+      "priority": "low",
+      "location": "Room 302",
+      "hostel": "lohit_boys",
+      "user_id": 12,
+      "assigned_to": null,
+      "created_at": "2023-06-06T11:30:00Z",
+      "updated_at": null,
+      "resolved_at": null,
+      "sentiment_score": -0.3
+    }
+  ],
+  
+  "rooms": [
+    {
+      "id": 1,
+      "number": "LG-101",
+      "floor": 1,
+      "building": "Lohit Block A",
+      "hostel": "lohit_girls",
+      "type": "double",
+      "capacity": 2
+    },
+    {
+      "id": 2,
+      "number": "LG-102",
+      "floor": 1,
+      "building": "Lohit Block A",
+      "hostel": "lohit_girls",
+      "type": "double",
+      "capacity": 2
+    },
+    {
+      "id": 3,
+      "number": "LB-201",
+      "floor": 2,
+      "building": "Lohit Block B",
+      "hostel": "lohit_boys",
+      "type": "double",
+      "capacity": 2
+    },
+    {
+      "id": 4,
+      "number": "LB-202",
+      "floor": 2,
+      "building": "Lohit Block B",
+      "hostel": "lohit_boys",
+      "type": "double",
+      "capacity": 2
+    },
+    {
+      "id": 5,
+      "number": "PB-301",
+      "floor": 3,
+      "building": "Papum Block A",
+      "hostel": "papum_boys",
+      "type": "single",
+      "capacity": 1
+    },
+    {
+      "id": 6,
+      "number": "PB-302",
+      "floor": 3,
+      "building": "Papum Block A",
+      "hostel": "papum_boys",
+      "type": "single",
+      "capacity": 1
+    },
+    {
+      "id": 7,
+      "number": "SB-401",
+      "floor": 4,
+      "building": "Subhanshiri Block A",
+      "hostel": "subhanshiri_boys",
+      "type": "single",
+      "capacity": 1
+    },
+    {
+      "id": 8,
+      "number": "SB-402",
+      "floor": 4,
+      "building": "Subhanshiri Block A",
+      "hostel": "subhanshiri_boys",
+      "type": "single",
+      "capacity": 1
+    }
+  ],
+  
+  "roomAllocations": [
+    {
+      "id": 1,
+      "bed_number": 1,
+      "start_date": "2023-01-01T00:00:00Z",
+      "end_date": null,
+      "status": "current",
+      "user_id": 10,
+      "room_id": 1
+    },
+    {
+      "id": 2,
+      "bed_number": 2,
+      "start_date": "2023-01-01T00:00:00Z",
+      "end_date": null,
+      "status": "current",
+      "user_id": 11,
+      "room_id": 1
+    },
+    {
+      "id": 3,
+      "bed_number": 1,
+      "start_date": "2023-01-01T00:00:00Z",
+      "end_date": null,
+      "status": "current",
+      "user_id": 12,
+      "room_id": 3
+    },
+    {
+      "id": 4,
+      "bed_number": 1,
+      "start_date": "2023-01-01T00:00:00Z",
+      "end_date": null,
+      "status": "current",
+      "user_id": 13,
+      "room_id": 5
+    },
+    {
+      "id": 5,
+      "bed_number": 1,
+      "start_date": "2023-01-01T00:00:00Z",
+      "end_date": null,
+      "status": "current",
+      "user_id": 14,
+      "room_id": 7
+    }
+  ],
+  
+  "assets": [
+    {
+      "id": 1,
+      "name": "Water Cooler",
+      "asset_type": "electronics",
+      "description": "Industrial water cooler with 25L capacity",
+      "location": "1st Floor Common Area",
+      "hostel": "lohit_girls",
+      "status": "available",
+      "purchase_date": "2022-05-15T00:00:00Z",
+      "warranty_until": "2024-05-14T00:00:00Z",
+      "condition": "good"
+    },
+    {
+      "id": 2,
+      "name": "Study Table",
+      "asset_type": "furniture",
+      "description": "Wooden study table with drawer",
+      "location": "Room LG-101",
+      "hostel": "lohit_girls",
+      "status": "in_use",
+      "purchase_date": "2022-01-10T00:00:00Z",
+      "warranty_until": "2023-01-09T00:00:00Z",
+      "condition": "good"
+    },
+    {
+      "id": 3,
+      "name": "RO Water Purifier",
+      "asset_type": "electronics",
+      "description": "Kent Grand RO Water Purifier",
+      "location": "1st Floor Common Area",
+      "hostel": "lohit_boys",
+      "status": "under_repair",
+      "purchase_date": "2021-11-20T00:00:00Z",
+      "warranty_until": "2022-11-19T00:00:00Z",
+      "condition": "poor"
+    },
+    {
+      "id": 4,
+      "name": "Washing Machine",
+      "asset_type": "electronics",
+      "description": "Samsung 8kg Fully Automatic Washing Machine",
+      "location": "Ground Floor Laundry Room",
+      "hostel": "papum_boys",
+      "status": "available",
+      "purchase_date": "2022-07-05T00:00:00Z",
+      "warranty_until": "2025-07-04T00:00:00Z",
+      "condition": "good"
+    },
+    {
+      "id": 5,
+      "name": "Bed",
+      "asset_type": "furniture",
+      "description": "Single bed with storage",
+      "location": "Room SB-401",
+      "hostel": "subhanshiri_boys",
+      "status": "in_use",
+      "purchase_date": "2022-02-15T00:00:00Z",
+      "warranty_until": "2023-02-14T00:00:00Z",
+      "condition": "good"
+    }
+  ],
+  
+  "messMenu": [
+    {
+      "id": 1,
+      "day_of_week": "Monday",
+      "meal_type": "breakfast",
+      "description": "Poha, Bread with Jam/Butter, Boiled Eggs, Tea/Coffee"
+    },
+    {
+      "id": 2,
+      "day_of_week": "Monday",
+      "meal_type": "lunch",
+      "description": "Rice, Dal, Chapati, Mix Vegetable, Salad, Curd"
+    },
+    {
+      "id": 3,
+      "day_of_week": "Monday",
+      "meal_type": "dinner",
+      "description": "Rice, Dal, Chapati, Paneer Curry, Salad"
+    },
+    {
+      "id": 4,
+      "day_of_week": "Tuesday",
+      "meal_type": "breakfast",
+      "description": "Aloo Paratha, Curd, Pickle, Tea/Coffee"
+    },
+    {
+      "id": 5,
+      "day_of_week": "Tuesday",
+      "meal_type": "lunch",
+      "description": "Rice, Dal, Chapati, Rajma, Salad, Buttermilk"
+    },
+    {
+      "id": 6,
+      "day_of_week": "Tuesday",
+      "meal_type": "dinner",
+      "description": "Rice, Dal, Chapati, Egg Curry, Salad"
+    }
+  ],
+  
+  "messFeedback": [
+    {
+      "id": 1,
+      "rating": 3,
+      "comment": "The food was average today. Rice was a bit undercooked.",
+      "meal_type": "lunch",
+      "sentiment_score": -0.2,
+      "user_id": 10
+    },
+    {
+      "id": 2,
+      "rating": 4,
+      "comment": "Enjoyed the paneer curry today. Very tasty.",
+      "meal_type": "dinner",
+      "sentiment_score": 0.7,
+      "user_id": 11
+    },
+    {
+      "id": 3,
+      "rating": 2,
+      "comment": "The food quality is deteriorating. The dal was too watery.",
+      "meal_type": "lunch",
+      "sentiment_score": -0.6,
+      "user_id": 12
+    },
+    {
+      "id": 4,
+      "rating": 5,
+      "comment": "Best breakfast in a long time. Really enjoyed the aloo paratha.",
+      "meal_type": "breakfast",
+      "sentiment_score": 0.9,
+      "user_id": 13
+    }
+  ],
+  
+  "communityPosts": [
+    {
+      "id": 1,
+      "title": "Cultural Night Announcement",
+      "content": "We are organizing a cultural night on 15th June in the hostel auditorium. All students are invited to participate and showcase their talents.",
+      "category": "announcement",
+      "sentiment_score": 0.8,
+      "user_id": 3
+    },
+    {
+      "id": 2,
+      "title": "Lost ID Card",
+      "content": "I have lost my ID card somewhere in the hostel premises yesterday. If anyone finds it, please contact me at Room LG-102.",
+      "category": "lost_found",
+      "sentiment_score": -0.3,
+      "user_id": 11
+    },
+    {
+      "id": 3,
+      "title": "Sports Event This Weekend",
+      "content": "Inter-hostel sports competition will be held this weekend. Hostels should form their teams for cricket, football, and badminton.",
+      "category": "event",
+      "sentiment_score": 0.7,
+      "user_id": 4
+    }
+  ],
+  
+  "comments": [
+    {
+      "id": 1,
+      "content": "I'm interested in participating in the singing competition. Where can I register?",
+      "user_id": 10,
+      "post_id": 1
+    },
+    {
+      "id": 2,
+      "content": "I think I saw an ID card near the water cooler on the 1st floor. Will check again and let you know.",
+      "user_id": 12,
+      "post_id": 2
+    },
+    {
+      "id": 3,
+      "content": "When will the team selections start? And where?",
+      "user_id": 13,
+      "post_id": 3
+    }
+  ]
+} 

@@ -1,0 +1,170 @@
+{
+  "lohit_girls": [
+    {
+      "number": "LG-101",
+      "floor": 1,
+      "building": "Lohit Girls Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LG-102",
+      "floor": 1,
+      "building": "Lohit Girls Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LG-103",
+      "floor": 1,
+      "building": "Lohit Girls Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LG-201",
+      "floor": 2,
+      "building": "Lohit Girls Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LG-202",
+      "floor": 2,
+      "building": "Lohit Girls Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    }
+  ],
+  "lohit_boys": [
+    {
+      "number": "LB-101",
+      "floor": 1,
+      "building": "Lohit Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LB-102",
+      "floor": 1,
+      "building": "Lohit Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LB-201",
+      "floor": 2,
+      "building": "Lohit Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LB-202",
+      "floor": 2,
+      "building": "Lohit Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "LB-301",
+      "floor": 3,
+      "building": "Lohit Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    }
+  ],
+  "papum_boys": [
+    {
+      "number": "PB-101",
+      "floor": 1,
+      "building": "Papum Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "PB-102",
+      "floor": 1,
+      "building": "Papum Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "PB-201",
+      "floor": 2,
+      "building": "Papum Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "PB-202",
+      "floor": 2,
+      "building": "Papum Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "PB-301",
+      "floor": 3,
+      "building": "Papum Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    }
+  ],
+  "subhanshiri_boys": [
+    {
+      "number": "SB-101",
+      "floor": 1,
+      "building": "Subhanshiri Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "SB-102",
+      "floor": 1,
+      "building": "Subhanshiri Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "SB-201",
+      "floor": 2,
+      "building": "Subhanshiri Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "SB-202",
+      "floor": 2,
+      "building": "Subhanshiri Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    },
+    {
+      "number": "SB-301",
+      "floor": 3,
+      "building": "Subhanshiri Boys Hostel",
+      "type": "triple",
+      "capacity": 3,
+      "occupants": 0
+    }
+  ]
+} 

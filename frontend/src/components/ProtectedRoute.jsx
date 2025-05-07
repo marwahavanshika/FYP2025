@@ -11,9 +11,40 @@ const ProtectedRoute = ({ children, requiredRole }) => {
   }
   
   // If a specific role is required, check if the user has that role
-  if (requiredRole && user?.role !== requiredRole) {
-    // Redirect to dashboard if user doesn't have the required role
-    return <Navigate to="/" />;
+  if (requiredRole) {
+    // Handle either a single role string or an array of roles
+    const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+    
+    // Always allow admin and HMC to access any route
+    if (user?.role === 'admin' || user?.role === 'hmc') {
+      return children;
+    }
+    
+    // Check if the user's role is in the allowed roles
+    if (!allowedRoles.includes(user?.role)) {
+      // Redirect to appropriate dashboard based on role
+      switch (user?.role) {
+        case 'hmc':
+          return <Navigate to="/dashboard/hmc" />;
+        case 'warden_lohit_girls':
+          return <Navigate to="/dashboard/warden/lohit-girls" />;
+        case 'warden_lohit_boys':
+          return <Navigate to="/dashboard/warden/lohit-boys" />;
+        case 'warden_papum_boys':
+          return <Navigate to="/dashboard/warden/papum-boys" />;
+        case 'warden_subhanshiri_boys':
+          return <Navigate to="/dashboard/warden/subhanshiri-boys" />;
+        case 'plumber':
+          return <Navigate to="/dashboard/maintenance/plumber" />;
+        case 'electrician':
+          return <Navigate to="/dashboard/maintenance/electrician" />;
+        case 'mess_vendor':
+          return <Navigate to="/dashboard/mess" />;
+        default:
+          // For students and other roles, redirect to main dashboard
+          return <Navigate to="/" />;
+      }
+    }
   }
   
   // If user is authenticated and has the required role (if any), render the children

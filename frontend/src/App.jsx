@@ -19,6 +19,16 @@ import MessFeedback from './pages/MessFeedback.jsx';
 import Profile from './pages/Profile.jsx';
 import AdminPanel from './pages/AdminPanel.jsx';
 
+// New Dashboard Pages
+import HmcDashboard from './pages/dashboards/HmcDashboard.jsx';
+import WardenLohitGirlsDashboard from './pages/dashboards/WardenLohitGirlsDashboard.jsx';
+import WardenLohitBoysDashboard from './pages/dashboards/WardenLohitBoysDashboard.jsx';
+import WardenPapumBoysDashboard from './pages/dashboards/WardenPapumBoysDashboard.jsx';
+import WardenSubhanshiriBoysDashboard from './pages/dashboards/WardenSubhanshiriBoysDashboard.jsx';
+import PlumberDashboard from './pages/dashboards/PlumberDashboard.jsx';
+import ElectricianDashboard from './pages/dashboards/ElectricianDashboard.jsx';
+import MessVendorDashboard from './pages/dashboards/MessVendorDashboard.jsx';
+
 function App() {
   const { isAuthenticated, user } = useSelector(state => state.auth);
   const navigate = useNavigate();
@@ -34,6 +44,41 @@ function App() {
     }
   }, [isAuthenticated, isLoginPage, navigate]);
 
+  // Redirect to role-specific dashboard if the user has a role
+  useEffect(() => {
+    if (isAuthenticated && location.pathname === '/' && user) {
+      switch (user.role) {
+        case 'hmc':
+          navigate('/dashboard/hmc');
+          break;
+        case 'warden_lohit_girls':
+          navigate('/dashboard/warden/lohit-girls');
+          break;
+        case 'warden_lohit_boys':
+          navigate('/dashboard/warden/lohit-boys');
+          break;
+        case 'warden_papum_boys':
+          navigate('/dashboard/warden/papum-boys');
+          break;
+        case 'warden_subhanshiri_boys':
+          navigate('/dashboard/warden/subhanshiri-boys');
+          break;
+        case 'plumber':
+          navigate('/dashboard/maintenance/plumber');
+          break;
+        case 'electrician':
+          navigate('/dashboard/maintenance/electrician');
+          break;
+        case 'mess_vendor':
+          navigate('/dashboard/mess');
+          break;
+        default:
+          // For students and other roles, stay on the main dashboard
+          break;
+      }
+    }
+  }, [isAuthenticated, location.pathname, user, navigate]);
+
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {isAuthenticated && <Navigation />}
@@ -45,6 +90,7 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             
+            {/* Main Routes */}
             <Route path="/" element={
               <ProtectedRoute>
                 <Dashboard />
@@ -90,6 +136,55 @@ function App() {
             <Route path="/admin" element={
               <ProtectedRoute requiredRole="admin">
                 <AdminPanel />
+              </ProtectedRoute>
+            } />
+            
+            {/* Role-specific dashboard routes */}
+            <Route path="/dashboard/hmc" element={
+              <ProtectedRoute requiredRole="hmc">
+                <HmcDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/warden/lohit-girls" element={
+              <ProtectedRoute requiredRole="warden_lohit_girls">
+                <WardenLohitGirlsDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/warden/lohit-boys" element={
+              <ProtectedRoute requiredRole="warden_lohit_boys">
+                <WardenLohitBoysDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/warden/papum-boys" element={
+              <ProtectedRoute requiredRole="warden_papum_boys">
+                <WardenPapumBoysDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/warden/subhanshiri-boys" element={
+              <ProtectedRoute requiredRole="warden_subhanshiri_boys">
+                <WardenSubhanshiriBoysDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/maintenance/plumber" element={
+              <ProtectedRoute requiredRole="plumber">
+                <PlumberDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/maintenance/electrician" element={
+              <ProtectedRoute requiredRole="electrician">
+                <ElectricianDashboard />
+              </ProtectedRoute>
+            } />
+            
+            <Route path="/dashboard/mess" element={
+              <ProtectedRoute requiredRole="mess_vendor">
+                <MessVendorDashboard />
               </ProtectedRoute>
             } />
             

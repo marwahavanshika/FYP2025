@@ -37,10 +37,13 @@ export const createAsset = createAsyncThunk(
   'assets/createAsset',
   async (assetData, { rejectWithValue }) => {
     try {
+      console.log('Creating asset with data:', assetData);
       const response = await api.post('/api/assets/', assetData);
+      console.log('Asset created successfully:', response.data);
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      console.error('Error creating asset:', error.response?.data || error.message);
+      return rejectWithValue(error.response?.data || { detail: error.message });
     }
   }
 );

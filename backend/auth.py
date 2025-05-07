@@ -73,9 +73,66 @@ def get_admin_user(current_user: models.User = Depends(get_current_user)):
         )
     return current_user
 
+def get_hmc_user(current_user: models.User = Depends(get_current_user)):
+    """Check if user is an HMC member"""
+    if current_user.role != "hmc" and current_user.role != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions. HMC role required.",
+        )
+    return current_user
+
+def get_warden_user(current_user: models.User = Depends(get_current_user)):
+    """Check if user is a warden"""
+    warden_roles = ["warden_lohit_girls", "warden_lohit_boys", "warden_papum_boys", "warden_subhanshiri_boys"]
+    if current_user.role not in warden_roles and current_user.role != "admin" and current_user.role != "hmc":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions. Warden role required.",
+        )
+    return current_user
+
+def get_specific_warden_user(hostel: str, current_user: models.User = Depends(get_current_user)):
+    """Check if user is a warden for a specific hostel"""
+    warden_mapping = {
+        "lohit_girls": "warden_lohit_girls",
+        "lohit_boys": "warden_lohit_boys",
+        "papum_boys": "warden_papum_boys",
+        "subhanshiri_boys": "warden_subhanshiri_boys"
+    }
+    
+    if current_user.role != warden_mapping.get(hostel) and current_user.role != "admin" and current_user.role != "hmc":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Insufficient permissions. Warden role for {hostel} required.",
+        )
+    return current_user
+
+def get_maintenance_user(current_user: models.User = Depends(get_current_user)):
+    """Check if user is a maintenance staff (plumber or electrician)"""
+    if current_user.role not in ["plumber", "electrician"] and current_user.role != "admin" and current_user.role != "hmc":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions. Maintenance role required.",
+        )
+    return current_user
+
+def get_mess_vendor_user(current_user: models.User = Depends(get_current_user)):
+    """Check if user is a mess vendor"""
+    if current_user.role != "mess_vendor" and current_user.role != "admin" and current_user.role != "hmc":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions. Mess vendor role required.",
+        )
+    return current_user
+
 def get_staff_or_admin_user(current_user: models.User = Depends(get_current_user)):
     """Check if user is staff or admin"""
-    if current_user.role not in ["staff", "admin"]:
+    staff_roles = ["admin", "hmc", "warden_lohit_girls", "warden_lohit_boys", 
+                  "warden_papum_boys", "warden_subhanshiri_boys", 
+                  "plumber", "electrician", "mess_vendor"]
+    
+    if current_user.role not in staff_roles:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions",

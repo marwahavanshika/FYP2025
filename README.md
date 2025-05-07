@@ -1,145 +1,170 @@
-# HostelAiNexus - AI-Enhanced Hostel Management System
+# HostelAiNexus - Hostel Management System
 
-HostelAiNexus is a comprehensive hostel management system enhanced with AI capabilities to streamline administrative tasks, improve resident experience, and provide intelligent insights for better decision-making.
+**HostelAiNexus** is a comprehensive hostel management system designed to streamline the operations of educational institution hostels. It features role-based access control, complaint management, room allocation, asset tracking, mess management, and community interaction.
 
-![HostelAiNexus Logo](./generated-icon.png)
+## Features
 
-## 🚀 Features
+- **Role-Based Access Control**: Different dashboards and features for students, wardens, maintenance staff, mess vendors, and administrators
+- **Complaint Management**: File, track, and resolve maintenance issues with AI-powered categorization and sentiment analysis
+- **Room Allocation**: Manage student room assignments across different hostels
+- **Asset Management**: Track hostel assets, their status, and maintenance history
+- **Mess Management**: Schedule meals, collect student feedback, and improve food quality
+- **Community Interaction**: Students and staff can post announcements, hold discussions, and organize events
 
-- **Smart Room Allocation**: AI-powered room assignment based on preferences and compatibility
-- **Asset Management**: Track hostel assets, maintenance schedules, and usage
-- **Complaint Management**: Digital system for residents to report and track resolution of issues
-- **Community Portal**: Foster community engagement and organize events
-- **Mess Feedback System**: Collect and analyze feedback on meal quality and service
-- **Admin Dashboard**: Comprehensive analytics for hostel administrators
-- **User Profiles**: Personalized experience for each resident
+## System Architecture
 
-## 🛠️ Tech Stack
+HostelAiNexus uses a modern stack with:
 
-- **Frontend**: React, Redux, TailwindCSS, Chart.js
-- **Backend**: FastAPI, SQLAlchemy, Python
-- **AI Components**: Natural Language Processing for feedback analysis and resident matching
-- **Database**: SQLite (development), PostgreSQL (production-ready)
+- **Backend**: Python with FastAPI, SQLAlchemy ORM
+- **Frontend**: React with Redux for state management, React Router for navigation
+- **Database**: PostgreSQL (can be configured to use SQLite for development)
+- **AI Features**: Sentiment analysis, complaint categorization, and voice-to-text processing
 
-## 📋 Prerequisites
+## Test Data and Credentials
 
-- Node.js (v14.0.0 or later)
-- Python (v3.11 or later)
-- npm or yarn
+For testing and demonstration purposes, you can use the test data provided in `test_data.json`. Here's a summary of the available test users:
 
-## 🔧 Setup and Installation
+### User Credentials
 
-### 1. Clone the Repository
+| Role | Email | Password | Name |
+|------|-------|----------|------|
+| Admin | admin@hostel.edu | admin123 | Admin User |
+| HMC | hmc@hostel.edu | hmc123 | HMC Head |
+| Warden (Lohit Girls) | lohitgirls.warden@hostel.edu | warden123 | Dr. Priya Singh |
+| Warden (Lohit Boys) | lohitboys.warden@hostel.edu | warden123 | Dr. Rahul Sharma |
+| Warden (Papum Boys) | papumboys.warden@hostel.edu | warden123 | Dr. Ankit Patel |
+| Warden (Subhanshiri Boys) | subhanshiriboys.warden@hostel.edu | warden123 | Dr. Vikram Mathur |
+| Plumber | plumber@hostel.edu | plumber123 | Rajesh Kumar |
+| Electrician | electrician@hostel.edu | electrician123 | Sunil Verma |
+| Mess Vendor | messvendor@hostel.edu | mess123 | Govind Caterers |
+| Student (Female) | female1@hostel.edu | student123 | Anjali Mishra |
+| Student (Female) | female2@hostel.edu | student123 | Neha Gupta |
+| Student (Male) | male1@hostel.edu | student123 | Aditya Sharma |
+| Student (Male) | male2@hostel.edu | student123 | Rohan Singh |
+| Student (PhD Male) | phdmale@hostel.edu | student123 | Anand Mehta |
+| Student (Unallocated) | newstudent@hostel.edu | student123 | Kriti Joshi |
 
-```bash
-git clone https://github.com/yourusername/HostelAiNexus.git
-cd HostelAiNexus
-```
+### Test Data Summary
 
-### 2. Backend Setup
+The test data includes:
+- 15 users with different roles
+- 6 sample complaints across various categories
+- 8 room entries spanning all hostels
+- 5 room allocations for students
+- 5 assets (furniture and electronics)
+- 6 mess menu items (2 days worth of meals)
+- 4 mess feedback entries
+- 3 community posts with comments
 
-```bash
-# Navigate to the backend directory
-cd backend
+## Role Descriptions
 
-# Create a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+### Administrator
+- Full access to all system features
+- Manage users, hostels, and system settings
+- View analytics and reports
 
-# Install dependencies
-pip install -r requirements.txt
+### HMC (Hostel Management Committee)
+- Manage hostel allocations
+- Assign wardens to hostels
+- Oversee all hostel operations
+- Access analytics and reports
 
-# Start the backend server
-python main.py
-```
+### Wardens
+- Manage students in their respective hostels
+- Handle complaints for their hostel
+- Manage hostel assets
+- View hostel-specific reports
 
-The backend server will start on http://localhost:8000
+### Maintenance Staff (Plumber/Electrician)
+- View and resolve assigned complaints
+- Update status of maintenance tasks
+- Access maintenance reports
 
-### 3. Frontend Setup
+### Mess Vendor
+- Manage mess menu
+- View and respond to food-related complaints
+- Access mess feedback
 
-```bash
-# Navigate to the frontend directory
-cd frontend
+### Students
+- File complaints
+- Provide mess feedback
+- Participate in community discussions
+- View room allocation details
 
-# Install dependencies
-npm install
+## Getting Started
 
-# Start the development server
-npm start
-```
+1. Clone the repository
+2. Install dependencies for both backend and frontend:
+   ```
+   # Backend
+   cd backend
+   pip install -r requirements.txt
+   
+   # Frontend
+   cd ../frontend
+   npm install
+   ```
+3. Start the backend server:
+   ```
+   cd backend
+   uvicorn main:app --reload
+   ```
+4. Start the frontend development server:
+   ```
+   cd frontend
+   npm start
+   ```
+5. Access the application at `http://localhost:3000`
+6. Log in using any of the test credentials provided above
 
-The frontend development server will start on http://localhost:5000
+## API Documentation
 
-## 🔐 Authentication
+Once the backend server is running, you can access the API documentation at:
+- Swagger UI: `http://localhost:8000/docs`
+- ReDoc: `http://localhost:8000/redoc`
 
-The system uses JWT-based authentication. Default admin credentials:
+## Role-Specific Dashboards
 
-- **Email**: admin@hostelainexus.com
-- **Password**: admin123
+### Student Dashboard
+- Overview of complaints filed
+- Room allocation details
+- Mess feedback history
+- Community posts
 
-⚠️ **Important**: Change these credentials in production!
+### Warden Dashboard
+- Student list for their hostel
+- Complaint management interface
+- Hostel occupancy status
+- Asset management for their hostel
 
-## 🌐 Environment Variables
+### Maintenance Staff Dashboard
+- List of assigned complaints
+- Complaint status management
+- Work history
 
-Create `.env` files in both frontend and backend directories for configuration:
+### Mess Vendor Dashboard
+- Mess menu management
+- Food-related complaint tracking
+- Feedback analytics
 
-### Backend `.env` Example:
+### HMC Dashboard
+- Hostel occupancy statistics
+- Warden assignment interface
+- Student allocation tool
+- System-wide analytics
 
-```
-SECRET_KEY=your_secret_key_here
-DATABASE_URL=sqlite:///hostel_management.db
-ENVIRONMENT=development
-```
+### Admin Dashboard
+- User management
+- System configuration
+- Comprehensive analytics
+- Access to all features
 
-### Frontend `.env` Example:
-
-```
-VITE_API_URL=http://localhost:8000/api
-```
-
-## 🧪 Testing
-
-```bash
-# Backend tests
-cd backend
-pytest
-
-# Frontend tests
-cd frontend
-npm test
-```
-
-## 📦 Deployment
-
-The application is configured for easy deployment on platforms like:
-
-- Heroku
-- Vercel
-- Azure
-- AWS
-
-See the deployment guides in the `docs` folder for platform-specific instructions.
-
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 📞 Contact
+## Acknowledgements
 
-For any questions or suggestions, please reach out to:
-- Email: support@hostelainexus.com
-- Website: [www.hostelainexus.com](https://www.hostelainexus.com)
-
----
-
-⭐ Star this repo if you find it useful! ⭐
+- FastAPI team for the excellent web framework
+- React team for the powerful frontend library
+- All contributors to this project
