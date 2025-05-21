@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List, Optional
+from sqlalchemy import func, or_
+from typing import List, Optional, Dict
 from datetime import datetime
 
 import models
@@ -40,6 +41,7 @@ async def create_room(
     
     return db_room
 
+@router.get("/rooms", response_model=List[schemas.RoomResponse])
 @router.get("/rooms/", response_model=List[schemas.RoomResponse])
 async def get_rooms(
     skip: int = 0,
@@ -47,6 +49,8 @@ async def get_rooms(
     building: Optional[str] = None,
     floor: Optional[int] = None,
     type: Optional[str] = None,
+    hostel: Optional[str] = None,
+    available: Optional[bool] = None,
     current_user: models.User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
@@ -60,6 +64,30 @@ async def get_rooms(
         query = query.filter(models.Room.floor == floor)
     if type:
         query = query.filter(models.Room.type == type)
+    if hostel:
+        query = query.filter(models.Room.hostel == hostel)
+    
+    # Filter for available rooms if requested
+    if available:
+        # Simpler approach to find available rooms
+        # Get rooms that have fewer allocations than their capacity
+        subquery = db.query(
+            models.RoomAllocation.room_id,
+            func.count(models.RoomAllocation.id).label('allocation_count')
+        ).filter(
+            models.RoomAllocation.status == "current"
+        ).group_by(
+            models.RoomAllocation.room_id
+        ).subquery()
+        
+        query = query.outerjoin(
+            subquery, models.Room.id == subquery.c.room_id
+        ).filter(
+            or_(
+                subquery.c.allocation_count == None,  # No allocations
+                subquery.c.allocation_count < models.Room.capacity  # Has space available
+            )
+        )
     
     rooms = query.offset(skip).limit(limit).all()
     return rooms
@@ -155,6 +183,36 @@ async def delete_room(
     
     return {"message": "Room deleted successfully"}
 
+@router.get("/rooms/{room_id}/available-beds", response_model=Dict[str, List[int]])
+async def get_available_beds(
+    room_id: int,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get available beds for a specific room."""
+    # Check if room exists
+    room = db.query(models.Room).filter(models.Room.id == room_id).first()
+    if room is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Room not found",
+        )
+    
+    # Get all beds allocated to this room
+    allocated_beds = db.query(models.RoomAllocation.bed_number).filter(
+        models.RoomAllocation.room_id == room_id,
+        models.RoomAllocation.status == "current"
+    ).all()
+    
+    # Convert to a list of bed numbers
+    allocated_bed_numbers = [bed[0] for bed in allocated_beds]
+    
+    # Calculate available beds (all beds from 1 to capacity that are not allocated)
+    all_beds = list(range(1, room.capacity + 1))
+    available_beds = [bed for bed in all_beds if bed not in allocated_bed_numbers]
+    
+    return {"available_beds": available_beds}
+
 @router.post("/rooms/allocations/", response_model=schemas.RoomAllocationResponse, status_code=status.HTTP_201_CREATED)
 async def create_room_allocation(
     allocation: schemas.RoomAllocationCreate,
@@ -193,9 +251,22 @@ async def create_room_allocation(
     ).first()
     
     if existing_allocation:
+        # Get all available beds for this room
+        allocated_beds = db.query(models.RoomAllocation.bed_number).filter(
+            models.RoomAllocation.room_id == allocation.room_id,
+            models.RoomAllocation.status == "current"
+        ).all()
+        
+        allocated_bed_numbers = [bed[0] for bed in allocated_beds]
+        all_beds = list(range(1, room.capacity + 1))
+        available_beds = [bed for bed in all_beds if bed not in allocated_bed_numbers]
+        
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="This bed is already allocated",
+            detail={
+                "message": "This bed is already allocated",
+                "available_beds": available_beds
+            },
         )
     
     # Check if user already has a current allocation
