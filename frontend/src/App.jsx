@@ -82,7 +82,7 @@ function App() {
   }, [isAuthenticated, location.pathname, user, navigate]);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen mt-16 bg-gray-50">
       {isAuthenticated && <Navigation />}
       
       <div className="flex flex-1">

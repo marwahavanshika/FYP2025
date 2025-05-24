@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import UpvoteButton from '../components/UpvoteButton';
 import { useDispatch, useSelector } from 'react-redux';
 import { 
   fetchComplaints, 
@@ -15,7 +16,25 @@ const Complaints = () => {
   const dispatch = useDispatch();
   const { complaints, loading, error, success, message, suggestions } = useSelector(state => state.complaints);
   const { user } = useSelector(state => state.auth);
-  
+
+  const handleUpvoteChange = (updatedComplaint) => {
+    // Find and update the specific complaint in the complaints array
+    const updatedComplaints = complaints.map(complaint => 
+      complaint.id === updatedComplaint.id 
+        ? { ...complaint, upvote_count: updatedComplaint.upvote_count, has_upvoted: updatedComplaint.has_upvoted }
+        : complaint
+    );
+    
+    // Update the complaint in Redux store
+    dispatch(updateComplaint({
+      id: updatedComplaint.id,
+      complaintData: {
+        upvote_count: updatedComplaint.upvote_count,
+        has_upvoted: updatedComplaint.has_upvoted
+      }
+    }));
+  };
+
   // States for filtering and pagination
   const [filters, setFilters] = useState({
     status: '',
@@ -362,75 +381,101 @@ const Complaints = () => {
               </svg>
             </div>
           ) : complaints.length > 0 ? (
-            <table className="table">
-              <thead className="table-header">
-                <tr>
-                  <th className="table-header-cell">Title</th>
-                  <th className="table-header-cell">Category</th>
-                  <th className="table-header-cell">Location</th>
-                  <th className="table-header-cell">Status</th>
-                  <th className="table-header-cell">Priority</th>
-                  <th className="table-header-cell">Created</th>
-                  <th className="table-header-cell">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="table-body">
-                {complaints.map(complaint => (
-                  <tr key={complaint.id} className="table-row">
-                    <td className="table-cell font-medium text-gray-900">{complaint.title}</td>
-                    <td className="table-cell capitalize">{complaint.category}</td>
-                    <td className="table-cell">{complaint.location}</td>
-                    <td className="table-cell">
-                      <span className={`badge ${getStatusBadgeClass(complaint.status)} capitalize`}>
-                        {complaint.status.replace('_', ' ')}
-                      </span>
-                    </td>
-                    <td className="table-cell">
-                      <span className={`font-medium ${getPriorityClass(complaint.priority)} capitalize`}>
-                        {complaint.priority}
-                      </span>
-                    </td>
-                    <td className="table-cell">{formatDate(complaint.created_at)}</td>
-                    <td className="table-cell">
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => viewComplaintDetails(complaint)}
-                          className="p-1 text-blue-600 hover:text-blue-800"
-                          title="View Details"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-                          </svg>
-                        </button>
-                        {(user?.id === complaint.user_id || user?.role === 'admin' || user?.role === 'staff') && (
-                          <>
-                            <button
-                              onClick={() => openEditForm(complaint)}
-                              className="p-1 text-blue-600 hover:text-blue-800"
-                              title="Edit"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() => handleDelete(complaint.id)}
-                              className="p-1 text-red-600 hover:text-red-800"
-                              title="Delete"
-                            >
-                              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
-                              </svg>
-                            </button>
-                          </>
+            <div className="grid gap-6 mt-6">
+              {complaints.map(complaint => (
+                <div 
+                  key={complaint.id} 
+                  className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-200"
+                >
+                  <div className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {complaint.title}
+                          </h3>
+                          <div className="flex items-center space-x-3">
+                            {/* Upvote Button */}
+                            <UpvoteButton
+                              complaintId={complaint.id}
+                              upvoteCount={complaint.upvote_count || 0}
+                              hasUpvoted={complaint.has_upvoted || false}
+                              onUpvoteChange={handleUpvoteChange}
+                            />
+                            
+                            {/* Existing action buttons */}
+                            <div className="flex space-x-2">
+                              {(user.id === complaint.user_id || user.role === 'admin') && (
+                                <>
+                                  <button
+                                    onClick={() => openEditForm(complaint)}
+                                    className="text-blue-600 hover:text-blue-800"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(complaint.id)}
+                                    className="text-red-600 hover:text-red-800"
+                                  >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-gray-600 mt-2">{complaint.description}</p>
+
+                        <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {complaint.user?.full_name || 'Anonymous'}
+                          </div>
+
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            {formatDate(complaint.created_at)}
+                          </div>
+
+                          <div className="flex items-center">
+                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            {complaint.location}
+                          </div>
+
+                          <span className={getPriorityClass(complaint.priority)}>
+                            {complaint.priority}
+                          </span>
+
+                          <span className={getStatusBadgeClass(complaint.status)}>
+                            {complaint.status}
+                          </span>
+                        </div>
+
+                        {/* Show upvoters count if any */}
+                        {complaint.upvote_count > 0 && (
+                          <div className="mt-3 text-sm text-gray-500">
+                            {complaint.upvote_count} {complaint.upvote_count === 1 ? 'person has' : 'people have'} 
+                            reported this issue
+                          </div>
                         )}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
             <div className="text-center py-8">
               <p className="text-gray-500">No complaints found. Please adjust your filters or file a new complaint.</p>
@@ -644,23 +689,6 @@ const Complaints = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <p className="text-sm text-gray-500">Title</p>
-                <p className="font-medium">{viewingComplaint.title}</p>
-              </div>
-              
-              <div>
-                <p className="text-sm text-gray-500">Status</p>
-                <span className={`badge ${getStatusBadgeClass(viewingComplaint.status)} capitalize`}>
-                  {viewingComplaint.status.replace('_', ' ')}
-                </span>
-              </div>
-              
-              <div>
-                <p className="text-sm text-gray-500">Category</p>
-                <p className="capitalize">{viewingComplaint.category}</p>
-              </div>
-              
-              <div>
                 <p className="text-sm text-gray-500">Priority</p>
                 <p className={`font-medium ${getPriorityClass(viewingComplaint.priority)} capitalize`}>
                   {viewingComplaint.priority}
@@ -756,4 +784,4 @@ const Complaints = () => {
   );
 };
 
-export default Complaints;
+export default Complaints; 

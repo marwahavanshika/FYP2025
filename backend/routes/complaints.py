@@ -25,6 +25,8 @@ async def create_complaint(
     db: Session = Depends(get_db)
 ):
     """Create a new complaint."""
+    print(f"Received complaint data: {complaint}")  # Add this line for debugging
+
     # Use AI to analyze and categorize the complaint
     if not complaint.category or complaint.category == "auto":
         complaint.category = ai_utils.categorize_complaint(f"{complaint.title} {complaint.description}")
@@ -39,18 +41,22 @@ async def create_complaint(
             complaint.category
         )
     
-    # For students, validate that they're submitting complaints for their own hostel
+    # For students, automatically use their assigned hostel
+    complaint_hostel = None
     if current_user.role == "student":
         if not current_user.hostel:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="You must be assigned to a hostel before filing complaints",
             )
-        
-        if complaint.hostel != current_user.hostel:
+        complaint_hostel = current_user.hostel
+    else:
+        # For non-students, hostel must be specified in the payload
+        complaint_hostel = complaint.hostel
+        if not complaint_hostel:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="You can only file complaints for your assigned hostel",
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Hostel must be specified for non-student complaints",
             )
     
     # Auto-assign complaint to relevant maintenance staff based on category
@@ -77,7 +83,7 @@ async def create_complaint(
         description=complaint.description,
         category=complaint.category,
         location=complaint.location,
-        hostel=complaint.hostel,
+        hostel=complaint_hostel,  # Use the determined hostel
         priority=complaint.priority,
         sentiment_score=sentiment_score,
         user_id=current_user.id,
@@ -172,57 +178,6 @@ async def create_voice_complaint(
     
     return db_complaint
 
-@router.get("/complaints/", response_model=List[schemas.ComplaintResponse])
-async def get_complaints(
-    skip: int = 0,
-    limit: int = 100,
-    status: Optional[str] = None,
-    category: Optional[str] = None,
-    priority: Optional[str] = None,
-    hostel: Optional[str] = None,
-    current_user: models.User = Depends(get_current_active_user),
-    db: Session = Depends(get_db)
-):
-    """Get all complaints with optional filtering."""
-    query = db.query(models.Complaint)
-    
-    # Filter by user role
-    if current_user.role == "student":
-        # Students can only see their own complaints
-        query = query.filter(models.Complaint.user_id == current_user.id)
-    elif current_user.role.startswith("warden_"):
-        # Wardens can only see complaints from their hostel
-        hostel_mapping = {
-            "warden_lohit_girls": "lohit_girls",
-            "warden_lohit_boys": "lohit_boys",
-            "warden_papum_boys": "papum_boys",
-            "warden_subhanshiri_boys": "subhanshiri_boys"
-        }
-        query = query.filter(models.Complaint.hostel == hostel_mapping[current_user.role])
-    elif current_user.role == "plumber":
-        # Plumbers only see plumbing complaints
-        query = query.filter(models.Complaint.category == "plumbing")
-    elif current_user.role == "electrician":
-        # Electricians only see electrical complaints
-        query = query.filter(models.Complaint.category == "electrical")
-    elif current_user.role == "mess_vendor":
-        # Mess vendors only see mess-related complaints
-        query = query.filter(models.Complaint.category.in_(["mess", "food"]))
-    # Admin and HMC can see all complaints
-    
-    # Apply other filters if provided
-    if status:
-        query = query.filter(models.Complaint.status == status)
-    if category:
-        query = query.filter(models.Complaint.category == category)
-    if priority:
-        query = query.filter(models.Complaint.priority == priority)
-    if hostel:
-        query = query.filter(models.Complaint.hostel == hostel)
-    
-    complaints = query.order_by(models.Complaint.created_at.desc()).offset(skip).limit(limit).all()
-    return complaints
-
 @router.get("/complaints/{complaint_id}", response_model=schemas.ComplaintResponse)
 async def get_complaint(
     complaint_id: int,
@@ -238,11 +193,18 @@ async def get_complaint(
         )
     
     # Check if user has permission to view this complaint
-    if current_user.role == "student" and complaint.user_id != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You don't have permission to view this complaint",
-        )
+    if current_user.role == "student":
+        # Students can view complaints from their hostel
+        if not current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You must be assigned to a hostel to view complaints",
+            )
+        if complaint.hostel != current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You can only view complaints from your hostel",
+            )
     elif current_user.role.startswith("warden_"):
         hostel_mapping = {
             "warden_lohit_girls": "lohit_girls",
@@ -271,7 +233,81 @@ async def get_complaint(
             detail="You can only view mess-related complaints",
         )
     
-    return complaint
+    # Add has_upvoted information
+    has_upvoted = db.query(models.ComplaintUpvote).filter(
+        models.ComplaintUpvote.complaint_id == complaint.id,
+        models.ComplaintUpvote.user_id == current_user.id
+    ).first() is not None
+    setattr(complaint, 'has_upvoted', has_upvoted)
+    
+    return complaint 
+# Add both routes with and without trailing slash
+@router.get("/complaints", response_model=List[schemas.ComplaintResponse])
+@router.get("/complaints/", response_model=List[schemas.ComplaintResponse])
+async def get_complaints(
+    skip: int = 0,
+    limit: int = 100,
+    status: Optional[str] = None,
+    category: Optional[str] = None,
+    priority: Optional[str] = None,
+    hostel: Optional[str] = None,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get all complaints with optional filtering."""
+    query = db.query(models.Complaint)
+    
+    # Filter by user role
+    if current_user.role == "student":
+        # Students can see complaints from their hostel
+        if not current_user.hostel:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You must be assigned to a hostel to view complaints",
+            )
+        query = query.filter(models.Complaint.hostel == current_user.hostel)
+    elif current_user.role.startswith("warden_"):
+        # Wardens can only see complaints from their hostel
+        hostel_mapping = {
+            "warden_lohit_girls": "lohit_girls",
+            "warden_lohit_boys": "lohit_boys",
+            "warden_papum_boys": "papum_boys",
+            "warden_subhanshiri_boys": "subhanshiri_boys"
+        }
+        query = query.filter(models.Complaint.hostel == hostel_mapping[current_user.role])
+    elif current_user.role == "plumber":
+        # Plumbers only see plumbing complaints
+        query = query.filter(models.Complaint.category == "plumbing")
+    elif current_user.role == "electrician":
+        # Electricians only see electrical complaints
+        query = query.filter(models.Complaint.category == "electrical")
+    elif current_user.role == "mess_vendor":
+        # Mess vendors only see mess-related complaints
+        query = query.filter(models.Complaint.category.in_(["mess", "food"]))
+    # Admin and HMC can see all complaints (no filter)
+    
+    # Apply other filters if provided
+    if status:
+        query = query.filter(models.Complaint.status == status)
+    if category:
+        query = query.filter(models.Complaint.category == category)
+    if priority:
+        query = query.filter(models.Complaint.priority == priority)
+    if hostel:
+        query = query.filter(models.Complaint.hostel == hostel)
+    
+    complaints = query.order_by(models.Complaint.created_at.desc()).offset(skip).limit(limit).all()
+    
+    # Add has_upvoted information for each complaint
+    for complaint in complaints:
+        # Check if current user has upvoted this complaint
+        has_upvoted = db.query(models.ComplaintUpvote).filter(
+            models.ComplaintUpvote.complaint_id == complaint.id,
+            models.ComplaintUpvote.user_id == current_user.id
+        ).first() is not None
+        setattr(complaint, 'has_upvoted', has_upvoted)
+    
+    return complaints
 
 @router.put("/complaints/{complaint_id}", response_model=schemas.ComplaintResponse)
 async def update_complaint(
@@ -425,3 +461,71 @@ async def assign_complaint(
     db.refresh(complaint)
     
     return complaint
+
+
+@router.post("/complaints/{complaint_id}/upvote", response_model=schemas.ComplaintResponse)
+async def upvote_complaint(
+    complaint_id: int,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Upvote a complaint. Users can only upvote once."""
+    
+    # Check if complaint exists
+    complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Complaint not found"
+        )
+    
+    # Check if user has already upvoted
+    existing_upvote = db.query(models.ComplaintUpvote).filter(
+        models.ComplaintUpvote.complaint_id == complaint_id,
+        models.ComplaintUpvote.user_id == current_user.id
+    ).first()
+    
+    if existing_upvote:
+        # Remove upvote if it exists (toggle behavior)
+        db.delete(existing_upvote)
+        complaint.upvote_count -= 1
+        has_upvoted = False
+    else:
+        # Create new upvote
+        upvote = models.ComplaintUpvote(
+            complaint_id=complaint_id,
+            user_id=current_user.id
+        )
+        db.add(upvote)
+        complaint.upvote_count += 1
+        has_upvoted = True
+    
+    db.commit()
+    db.refresh(complaint)
+    
+    # Set has_upvoted before returning
+    setattr(complaint, 'has_upvoted', has_upvoted)
+    
+    return complaint
+
+@router.get("/complaints/{complaint_id}/upvotes", response_model=List[schemas.UserResponse])
+async def get_complaint_upvoters(
+    complaint_id: int,
+    current_user: models.User = Depends(get_current_active_user),
+    db: Session = Depends(get_db)
+):
+    """Get list of users who upvoted this complaint."""
+    complaint = db.query(models.Complaint).filter(models.Complaint.id == complaint_id).first()
+    if not complaint:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Complaint not found"
+        )
+    
+    upvoters = db.query(models.User).join(
+        models.ComplaintUpvote
+    ).filter(
+        models.ComplaintUpvote.complaint_id == complaint_id
+    ).all()
+    
+    return upvoters

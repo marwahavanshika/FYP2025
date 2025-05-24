@@ -1,7 +1,26 @@
 from sqlalchemy import Boolean, Column, DateTime, Enum, ForeignKey, Integer, String, Text, Float
+from sqlalchemy import UniqueConstraint
+
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+class ComplaintUpvote(Base):
+    __tablename__ = "complaint_upvotes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    complaint_id = Column(Integer, ForeignKey("complaints.id"))
+    user_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # Add unique constraint to prevent multiple upvotes from same user
+    __table_args__ = (
+        UniqueConstraint('complaint_id', 'user_id', name='unique_complaint_upvote'),
+    )
+
+    # Relationships
+    complaint = relationship("Complaint", back_populates="upvotes")
+    user = relationship("User", back_populates="complaint_upvotes")
+
 
 class User(Base):
     __tablename__ = "users"
@@ -24,6 +43,7 @@ class User(Base):
     comments = relationship("Comment", back_populates="user")
     room_allocation = relationship("RoomAllocation", back_populates="user")
     mess_feedback = relationship("MessFeedback", back_populates="user")
+    complaint_upvotes = relationship("ComplaintUpvote", back_populates="user")
 
 class Asset(Base):
     __tablename__ = "assets"
@@ -63,6 +83,8 @@ class Complaint(Base):
     # Relationships
     user = relationship("User", back_populates="complaints", foreign_keys=[user_id])
     assignee = relationship("User", back_populates="assigned_complaints", foreign_keys=[assigned_to])
+    upvotes = relationship("ComplaintUpvote", back_populates="complaint")
+    upvote_count = Column(Integer, default=0)  # Add this for easy counting
 
 class CommunityPost(Base):
     __tablename__ = "community_posts"
